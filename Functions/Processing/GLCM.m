@@ -30,6 +30,9 @@ end
 %Stack the results.
 G = reshape(G, k*k, 1);
 
+%Scale so the entries sum to 1;
+G = G / sum(G);
+
 end
 
 function shifted = CircularShift(X, offset)

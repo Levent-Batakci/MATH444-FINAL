@@ -1,4 +1,4 @@
-function [Q, Sw_eps, Sb, eps] = LDA(X, I)
+function [Q,Z] = LDA(X, I)
 %LDA returns the leading directions to project the data
 
     %Get the dimensions and labels
@@ -44,5 +44,11 @@ function [Q, Sw_eps, Sb, eps] = LDA(X, I)
    [W, E] = eigs((K'\Sb)/K, k-1);
    
    Q = K \ W;
+   
+   for i= 1:k-1
+    Q(:,i) = Q(:,i) / norm(Q(:,i)); 
+   end
+   
+   Z = Q' * X;
 end
 
