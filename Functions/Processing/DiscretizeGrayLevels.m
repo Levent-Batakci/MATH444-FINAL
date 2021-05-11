@@ -4,7 +4,7 @@ function discretizedImages = DiscretizeGrayLevels(images, k)
 
 %Fast, smart computation :)
 spacing = 256/k;
-discretizedImages = floor(images / spacing)+1;
+discretizedImages = ceil((images+1) / spacing);
 
 %1(1:k) * spacing
 

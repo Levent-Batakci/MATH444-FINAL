@@ -41,13 +41,14 @@ function [Q,Z] = LDA(X, I)
     %Compute the Cholesky factorization of Sw,eps
     K = chol(Sw_eps);
     
-   [W, E] = eigs((K'\Sb)/K, k-1);
+    numeigs = min(k-1, size(X,1)-1);
+    [W, ~] = eigs((K'\Sb)/K, numeigs);
    
-   Q = K \ W;
+    Q = K \ W;
    
-   for i= 1:k-1
-    Q(:,i) = Q(:,i) / norm(Q(:,i)); 
-   end
+    for i= 1:numeigs
+        Q(:,i) = Q(:,i) / norm(Q(:,i)); 
+    end
    
    Z = Q' * X;
 end

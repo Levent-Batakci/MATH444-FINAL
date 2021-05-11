@@ -15,7 +15,7 @@ end
 end
 
 function G = GHelper(im, offset, k)
-%Uses periodic boundary conditions, which is logical for textures
+%Ignores points past the boundary, which is logical for textures
 %Textures repeat!
 
 G = zeros(k,k);
@@ -32,7 +32,6 @@ G = reshape(G, k*k, 1);
 
 %Scale so the entries sum to 1;
 G = G / sum(G);
-
 end
 
 function shifted = CircularShift(X, offset)
@@ -50,14 +49,16 @@ if(xStart > size(X,1))
     yStart = yStart - size(X,1); 
 end
 
+shifted = X;
+    
 if(x ~= 0)
-    shifted = [X(xStart:end, :);  X(1:xStart-1, :)];
-else
-    shifted = X;
+    shifted = [X(xStart:end, :);  -1 * ones(size(X(1:xStart-1, :)))];
+    %shifted = [X(xStart:end, :);  X(1:xStart-1, :)]; %PERIODIC
 end
 
 if(y ~= 0)
-    shifted = [shifted(:, yStart:end)  shifted(:,1:yStart-1)];
+    shifted = [shifted(:, yStart:end)  -1 * ones(size(shifted(:,1:yStart-1)))];
+    %shifted = [shifted(:, yStart:end)  shifted(:,1:yStart-1)]; %PERIODIC
 end
 
 
