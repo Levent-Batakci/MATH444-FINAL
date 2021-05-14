@@ -1,6 +1,6 @@
 %Levent Batakci
     %MATH444 - Final
-%Classifies textures from the Okazaki Synthetic Texture Images database.
+%Classifies black and white textures.
 
 clear all
 
@@ -20,7 +20,7 @@ Xsample = X(:, sample);
 Isample = I(sample);
 
 %Parameters
-k = 12; % # of gray levels
+k = 6; % # of gray levels
 n=128; % image dimension
 offsets(:,1) = [2 0]';
 offsets(:,2) = [0 2]';
@@ -47,38 +47,41 @@ colors = [1 0 0; 0 1 0; 0 0 1; 1 1 0; 0 1 1; 1 0 1; 1 0.5 0.2; 0 0 0];
 clf(figure(3))
 figure(3)
 hold on
+ct = 1;
 for i = 1:r
     for j = i+1:r
-        subplot(r,r, 4*(i-1) + j-1);
+        subplot(2,3, ct);
+        ct = ct + 1;
         hold on
         for c = unique(I)
             Z_ = Z(:, Isample==c);
             scatter(Z_(i,:), Z_(j,:), "MarkerEdgeColor", "k", "MarkerFaceColor", colors(c,:));
         end
-        xlabel("PC " + i)
-        ylabel("PC " + j)
+        xlabel("PC " + i);
+        ylabel("PC " + j);
+        set(gca,"FontSize", 15);
     end
 end
 legend("Class 1", "Class 2", "Class 3", "Class 4", "Class 5");
 
 %LDA
-% [~, Z] = LDA(G, I);
-% clf(figure(4))
-% figure(4)
-% for i = unique(I)
-%     Z_ = Z(:, I==i);
-%     s = scatter(Z_(1,:), Z_(2,:),"MarkerEdgeColor", "k", "MarkerFaceColor", colors(i,:));
-%     hold on 
-% end
-% 
-% legend("1", "2", "3", "4", "5");
-% xlabel("Projection on first separator");
-% set(gca,'FontSize',15);
-% ylabel("Projection on second separator");
-% sgtitle("Clusters Separated by LDA on GLCMs", 'FontSize', 15);
+[Q, Zlda] = LDA(Z, Isample);
+clf(figure(4))
+figure(4)
+for i = unique(I)
+    Z_ = Zlda(:, Isample==i);
+    s = scatter(Z_(1,:), Z_(2,:),"MarkerEdgeColor", "k", "MarkerFaceColor", colors(i,:));
+    hold on 
+end
+
+legend("Class 1", "Class 2", "Class 3", "Class 4", "Class 5");
+xlabel("Projection on first separator");
+set(gca,'FontSize',15);
+ylabel("Projection on second separator");
 
 disp("MAKING MAXIMAL TREE"); %ON PCA!
 [root, Nodes, Leaves] = MaximalTree(Z, Isample);
+[LDAroot,~,LDAleaves] = MaximalTree(Zlda, Isample);
 disp("MAXIMAL TREE COMPLETED");
 
 %Test maximal tree on the remaining data points
@@ -86,23 +89,19 @@ disp("MAXIMAL TREE COMPLETED");
 G = ProcessImages(X, k, n, offsets);
 Gc = G - sum(G,2) / size(G,2);
 Zfull = features' * Gc;
-
-%Sanity check, should be 100% correct
-percentCorrect = 0;
-count=0;
-for i = 1:num
-    atr = Z(:, i);
-    c = Isample(i);
-    percentCorrect = percentCorrect + ((classify(root, atr) == c)/num);
-end
-percentCorrect
-%WORKS!
+Zlda_full = Q' * Zfull;
 
 %Test on untested set
 percentCorrect = 0;
+percentCorrectLDA = 0;
 for i = 1:p
-    atr = features' * Gc(:,i);
-    c = I(i);
-    percentCorrect = percentCorrect + ((classify(root, atr) == c)/p);
+    if(nnz(sample-i) == num) %not in sample
+        atr = Zfull(:,i);
+        LDAatr = Zlda_full(:,i);
+        c = I(i);
+        percentCorrect = percentCorrect + ((classify(root, atr) == c)/(p-num));
+        percentCorrectLDA = percentCorrectLDA + ((classify(LDAroot, LDAatr) == c)/(p-num));
+    end
 end
 percentCorrect
+percentCorrectLDA
